@@ -69,10 +69,10 @@ public class ListaProductos {
                 System.out.println("Leyendo línea de compras: " + linea); // Depuración
                 String[] campos = linea.split(",");
                 if (campos.length == 3) { // Verificar que la línea tiene exactamente tres columnas
-                    String nombreCliente = campos[0].trim();
-                    String nombreProducto = campos[1].trim();
-                    int cantidad = Integer.parseInt(campos[2].trim());
-                    compras.add(new Compra(nombreCliente, nombreProducto, cantidad));
+                    String nombreCliente = campos[0].trim();// el trim es para eliminar los espacios en blanco alrededor de cada valor
+                    String nombreProducto = campos[1].trim();// se extrae la información del campo en este caso del campo1
+                    int cantidad = Integer.parseInt(campos[2].trim());// se convierte la cantidad a un numero int
+                    compras.add(new Compra(nombreCliente, nombreProducto, cantidad));// Se crea un nuevo objeto Compra con los valores extraídos de la línea y se agrega a la lista compras
                 } else {
                     System.out.println("Error en formato de línea de compras: " + linea);
                 }
@@ -97,7 +97,8 @@ public class ListaProductos {
         // Crear mapas para almacenar las ganancias, la cantidad vendida y las cantidades compradas por cliente por producto
         Map<String, Double> gananciasPorProducto = new HashMap<>();
         Map<String, Integer> cantidadVendidaPorProducto = new HashMap<>();
-        Map<String, Map<String, Integer>> cantidadesPorClientePorProducto = new HashMap<>();
+        Map<String, Map<String, Integer>> cantidadesPorClientePorProducto = new HashMap<>();// Este mapa tiene como claves los nombres de los productos 
+        //y como valores internos, otro mapa que asocia cada cliente con la cantidad comprada de ese producto.
 
         // Inicializar mapas
         for (Producto producto : productos) {
@@ -114,7 +115,7 @@ public class ListaProductos {
             int cantidad = compra.getCantidad();
             Producto producto = obtenerProductoPorNombre(nombreProducto);
 
-            if (producto != null) {
+            if (producto != null) {//Se verifica si el producto asociado a la compra está presente en la lista de productos.
                 double totalGanancia = cantidad * producto.getPrecio();
                 gananciasPorProducto.put(nombreProducto, gananciasPorProducto.get(nombreProducto) + totalGanancia);
                 int cantidadActualVendida = cantidadVendidaPorProducto.get(nombreProducto);
@@ -182,16 +183,6 @@ public class ListaProductos {
                 seguirAgregando = false;
             }
         }
-    }
-
-    private int obtenerIndiceInsercion(Producto nuevoProducto) {
-        for (int i = 0; i < productos.size(); i++) {
-            Producto producto = productos.get(i);
-            if (producto.getNombre().compareToIgnoreCase(nuevoProducto.getNombre()) > 0) {
-                return i;
-            }
-        }
-        return productos.size(); // Si no se encuentra, agregar al final
     }
 
     private Producto obtenerProductoPorNombre(String nombre) {
