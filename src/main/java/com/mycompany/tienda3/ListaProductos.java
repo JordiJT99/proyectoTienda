@@ -1,7 +1,6 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  */
-
 package com.mycompany.tienda3;
 
 /**
@@ -17,8 +16,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 public class ListaProductos {
+
     private List<Producto> productos;
     private List<Compra> compras;
 
@@ -28,7 +29,7 @@ public class ListaProductos {
     }
 
     public void leerProductos(String archivoProductos) {
-   File fichero = new File(archivoProductos);
+        File fichero = new File(archivoProductos);
         if (!fichero.exists()) {
             System.out.println("El archivo " + archivoProductos + " no existe.");
             return;
@@ -54,37 +55,35 @@ public class ListaProductos {
         }
     }
 
-
-
     public void leerCompras(String archivoCompras) {
-    File fichero = new File(archivoCompras);
-    if (!fichero.exists()) {
-        System.out.println("El archivo " + archivoCompras + " no existe.");
-        return;
-    }
-
-    try (BufferedReader buffer = new BufferedReader(new FileReader(fichero))) {
-        String linea;
-        buffer.readLine(); // Saltar la cabecera
-        while ((linea = buffer.readLine()) != null) {
-            System.out.println("Leyendo línea de compras: " + linea); // Depuración
-            String[] campos = linea.split(",");
-            if (campos.length == 3) { // Verificar que la línea tiene exactamente tres columnas
-                String nombreCliente = campos[0].trim();
-                String nombreProducto = campos[1].trim();
-                int cantidad = Integer.parseInt(campos[2].trim());
-                compras.add(new Compra(nombreCliente, nombreProducto, cantidad));
-            } else {
-                System.out.println("Error en formato de línea de compras: " + linea);
-            }
+        File fichero = new File(archivoCompras);
+        if (!fichero.exists()) {
+            System.out.println("El archivo " + archivoCompras + " no existe.");
+            return;
         }
-    } catch (Exception e) {
-        System.out.println("ERROR al leer compras: " + e.getMessage());
-        e.printStackTrace();
-    }
-}
 
-     public void calcularGanancias(String archivoSalida) {
+        try (BufferedReader buffer = new BufferedReader(new FileReader(fichero))) {
+            String linea;
+            buffer.readLine(); // Saltar la cabecera
+            while ((linea = buffer.readLine()) != null) {
+                System.out.println("Leyendo línea de compras: " + linea); // Depuración
+                String[] campos = linea.split(",");
+                if (campos.length == 3) { // Verificar que la línea tiene exactamente tres columnas
+                    String nombreCliente = campos[0].trim();
+                    String nombreProducto = campos[1].trim();
+                    int cantidad = Integer.parseInt(campos[2].trim());
+                    compras.add(new Compra(nombreCliente, nombreProducto, cantidad));
+                } else {
+                    System.out.println("Error en formato de línea de compras: " + linea);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("ERROR al leer compras: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void calcularGanancias(String archivoSalida) {
         if (productos.isEmpty()) {
             System.out.println("No hay productos para calcular ganancias.");
             return;
@@ -155,6 +154,46 @@ public class ListaProductos {
         }
     }
 
+    public void agregarProductoConsola(String archivoProductos) {
+        Scanner scanner = new Scanner(System.in);
+        boolean seguirAgregando = true;
+
+        while (seguirAgregando) {
+            System.out.print("Ingrese el nombre del producto: ");
+            String nombre = scanner.nextLine();
+            System.out.print("Ingrese el precio del producto: ");
+            double precio = scanner.nextDouble();
+
+            scanner.nextLine(); // Limpiar el buffer
+
+            productos.add(new Producto(nombre, precio));
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(archivoProductos, true))) {
+                writer.write(nombre + "," + precio + "\n");
+                System.out.println("Producto agregado y guardado en " + archivoProductos);
+            } catch (Exception e) {
+                System.out.println("ERROR al guardar el producto: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            System.out.print("Desea agregar otro producto? (s/n): ");
+            String respuesta = scanner.nextLine();
+            if (!respuesta.equalsIgnoreCase("s")) {
+                seguirAgregando = false;
+            }
+        }
+    }
+
+    private int obtenerIndiceInsercion(Producto nuevoProducto) {
+        for (int i = 0; i < productos.size(); i++) {
+            Producto producto = productos.get(i);
+            if (producto.getNombre().compareToIgnoreCase(nuevoProducto.getNombre()) > 0) {
+                return i;
+            }
+        }
+        return productos.size(); // Si no se encuentra, agregar al final
+    }
+
     private Producto obtenerProductoPorNombre(String nombre) {
         for (Producto producto : productos) {
             if (producto.getNombre().equals(nombre)) {
@@ -163,6 +202,5 @@ public class ListaProductos {
         }
         return null;
     }
-    
-    
+
 }
