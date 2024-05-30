@@ -1,0 +1,10 @@
+Producto,Precio,Cantidad Vendida,Ganancia Total,Cliente,Cantidad Comprada por Cliente
+Camisa,20.0,4,80.0,Ana,1
+Camisa,20.0,4,80.0,Pedro,1
+Camisa,20.0,4,80.0,Juan,2
+Pantalón,30.0,1,30.0,Maria,1
+Zapatos,50.0,2,100.0,Pedro,1
+Zapatos,50.0,2,100.0,Juan,1
+Gorra,15.0,2,30.0,Maria,2
+Bufanda,10.0,3,30.0,Ana,1
+Bufanda,10.0,3,30.0,Pedro,2

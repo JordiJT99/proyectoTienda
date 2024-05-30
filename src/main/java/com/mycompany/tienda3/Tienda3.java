@@ -18,7 +18,7 @@ public class Tienda3 {
         listaProductos.leerCompras("compras.csv");
 
         // Calcular y mostrar las ganancias por producto
-        listaProductos.calcularGanancias();
+        listaProductos.calcularGanancias("resultados.csv");
     }
 }
 

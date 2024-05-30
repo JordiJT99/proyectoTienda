@@ -9,8 +9,10 @@ package com.mycompany.tienda3;
  * @author Mati
  */
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,69 +84,77 @@ public class ListaProductos {
     }
 }
 
-   public void calcularGanancias() {
-    if (productos.isEmpty()) {
-        System.out.println("No hay productos para calcular ganancias.");
-        return;
-    }
+     public void calcularGanancias(String archivoSalida) {
+        if (productos.isEmpty()) {
+            System.out.println("No hay productos para calcular ganancias.");
+            return;
+        }
 
-    if (compras.isEmpty()) {
-        System.out.println("No hay compras para calcular ganancias.");
-        return;
-    }
+        if (compras.isEmpty()) {
+            System.out.println("No hay compras para calcular ganancias.");
+            return;
+        }
 
-    // Crear mapas para almacenar las ganancias, la cantidad vendida y las cantidades compradas por cliente por producto
-    Map<String, Double> gananciasPorProducto = new HashMap<>();
-    Map<String, Integer> cantidadVendidaPorProducto = new HashMap<>();
-    Map<String, Map<String, Integer>> cantidadesPorClientePorProducto = new HashMap<>();
+        // Crear mapas para almacenar las ganancias, la cantidad vendida y las cantidades compradas por cliente por producto
+        Map<String, Double> gananciasPorProducto = new HashMap<>();
+        Map<String, Integer> cantidadVendidaPorProducto = new HashMap<>();
+        Map<String, Map<String, Integer>> cantidadesPorClientePorProducto = new HashMap<>();
 
-    // Inicializar mapas
-    for (Producto producto : productos) {
-        String nombreProducto = producto.getNombre();
-        gananciasPorProducto.put(nombreProducto, 0.0);
-        cantidadVendidaPorProducto.put(nombreProducto, 0);
-        cantidadesPorClientePorProducto.put(nombreProducto, new HashMap<>());
-    }
+        // Inicializar mapas
+        for (Producto producto : productos) {
+            String nombreProducto = producto.getNombre();
+            gananciasPorProducto.put(nombreProducto, 0.0);
+            cantidadVendidaPorProducto.put(nombreProducto, 0);
+            cantidadesPorClientePorProducto.put(nombreProducto, new HashMap<>());
+        }
 
-    // Calcular las ganancias, la cantidad vendida y las cantidades compradas por cliente basándose en las compras
-    for (Compra compra : compras) {
-        String nombreCliente = compra.getNombreCliente();
-        String nombreProducto = compra.getNombreProducto();
-        int cantidad = compra.getCantidad();
-        Producto producto = obtenerProductoPorNombre(nombreProducto);
+        // Calcular las ganancias, la cantidad vendida y las cantidades compradas por cliente basándose en las compras
+        for (Compra compra : compras) {
+            String nombreCliente = compra.getNombreCliente();
+            String nombreProducto = compra.getNombreProducto();
+            int cantidad = compra.getCantidad();
+            Producto producto = obtenerProductoPorNombre(nombreProducto);
 
-        if (producto != null) {
-            double totalGanancia = cantidad * producto.getPrecio();
-            gananciasPorProducto.put(nombreProducto, gananciasPorProducto.get(nombreProducto) + totalGanancia);
-            int cantidadActualVendida = cantidadVendidaPorProducto.get(nombreProducto);
-            cantidadVendidaPorProducto.put(nombreProducto, cantidadActualVendida + cantidad);
+            if (producto != null) {
+                double totalGanancia = cantidad * producto.getPrecio();
+                gananciasPorProducto.put(nombreProducto, gananciasPorProducto.get(nombreProducto) + totalGanancia);
+                int cantidadActualVendida = cantidadVendidaPorProducto.get(nombreProducto);
+                cantidadVendidaPorProducto.put(nombreProducto, cantidadActualVendida + cantidad);
 
-            // Obtener el mapa de cantidades por cliente para este producto
-            Map<String, Integer> cantidadesPorCliente = cantidadesPorClientePorProducto.get(nombreProducto);
-            // Incrementar la cantidad comprada por este cliente para este producto
-            int cantidadActualCliente = cantidadesPorCliente.getOrDefault(nombreCliente, 0);
-            cantidadesPorCliente.put(nombreCliente, cantidadActualCliente + cantidad);
+                // Obtener el mapa de cantidades por cliente para este producto
+                Map<String, Integer> cantidadesPorCliente = cantidadesPorClientePorProducto.get(nombreProducto);
+                // Incrementar la cantidad comprada por este cliente para este producto
+                int cantidadActualCliente = cantidadesPorCliente.getOrDefault(nombreCliente, 0);
+                cantidadesPorCliente.put(nombreCliente, cantidadActualCliente + cantidad);
+            }
+        }
+
+        // Escribir los resultados en un archivo CSV
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(archivoSalida))) {
+            writer.write("Producto,Precio,Cantidad Vendida,Ganancia Total,Cliente,Cantidad Comprada por Cliente\n");
+
+            for (Producto producto : productos) {
+                String nombreProducto = producto.getNombre();
+                double precio = producto.getPrecio();
+                int cantidadVendida = cantidadVendidaPorProducto.get(nombreProducto);
+                double gananciaTotal = gananciasPorProducto.get(nombreProducto);
+                Map<String, Integer> cantidadesPorCliente = cantidadesPorClientePorProducto.get(nombreProducto);
+
+                for (Map.Entry<String, Integer> clienteEntry : cantidadesPorCliente.entrySet()) {
+                    String nombreCliente = clienteEntry.getKey();
+                    int cantidadCompradaPorCliente = clienteEntry.getValue();
+
+                    writer.write(nombreProducto + "," + precio + "," + cantidadVendida + "," + gananciaTotal + "," + nombreCliente + "," + cantidadCompradaPorCliente + "\n");
+                }
+            }
+
+            System.out.println("Resultados guardados en " + archivoSalida);
+        } catch (Exception e) {
+            System.out.println("ERROR al escribir resultados: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    // Imprimir las ganancias, la cantidad vendida y las cantidades compradas por cliente por producto
-    for (Map.Entry<String, Double> entry : gananciasPorProducto.entrySet()) {
-        String nombreProducto = entry.getKey();
-        double gananciaTotal = entry.getValue();
-        int cantidadVendida = cantidadVendidaPorProducto.get(nombreProducto);
-        Map<String, Integer> cantidadesPorCliente = cantidadesPorClientePorProducto.get(nombreProducto);
-
-        System.out.println("Producto: " + nombreProducto + ", Ganancia Total: " + gananciaTotal + ", Cantidad Vendida: " + cantidadVendida);
-
-        // Imprimir las cantidades compradas por cliente
-        System.out.println("Cantidades compradas por cliente:");
-        for (Map.Entry<String, Integer> clienteEntry : cantidadesPorCliente.entrySet()) {
-            String nombreCliente = clienteEntry.getKey();
-            int cantidadCompradaPorCliente = clienteEntry.getValue();
-            System.out.println("- Cliente: " + nombreCliente + ", Cantidad Comprada: " + cantidadCompradaPorCliente);
-        }
-    }
-}
     private Producto obtenerProductoPorNombre(String nombre) {
         for (Producto producto : productos) {
             if (producto.getNombre().equals(nombre)) {
@@ -153,4 +163,6 @@ public class ListaProductos {
         }
         return null;
     }
+    
+    
 }
